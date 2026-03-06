@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Hörverstehens-Quiz (Akkusativ)</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary); margin-bottom: 10px; }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .audio-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .play-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .play-btn:hover { background-color: #2980b9; }
+
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .opt-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            font-weight: normal;
+        }
+
+        .opt-btn:hover { border-color: var(--accent); }
+
+        /* Feedback Farben */
+        .opt-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white;
+            font-weight: bold;
+        }
+
+        .opt-btn.incorrect {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white;
+        }
+
+        /* Lösungsanzeige Text */
+        .solution-display {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            background-color: #dff9fb;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #130f40;
+            border: 1px solid #c7ecee;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .btn-reset, .btn-solution {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-reset { background: #95a5a6; }
+        .btn-solution { background: var(--accent); }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .audio-card { padding: 15px; }
+            .opt-btn { width: 100%; text-align: center; }
+            .controls-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Hörverstehens-Quiz: Akkusativ (A1)</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Klicke auf den Play-Button (▶️), um den russischen Satz zu hören. Wähle danach das Wort aus, das im Satz als <strong>Objekt im Akkusativ</strong> vorkommt. 
+        <br><br>
+        Klicke auf „Lösung anzeigen“, um den kompletten Satz eingeblendet zu bekommen.
+    </div>
+
+    <div id="quiz-list">
+        <!-- Aufgaben werden hier generiert -->
+    </div>
+
+    <div style="text-align:center; margin-top: 40px; color: #7f8c8d; font-size: 0.85rem;">
+        © Sprachassistent Russisch - A1 Akkusativ Training
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        { id: 1, sentence: "Я люблю маму.", options: ["мама", "маму", "маме"], correct: "маму" },
+        { id: 2, sentence: "Он читает книгу.", options: ["книга", "книгу", "книги"], correct: "книгу" },
+        { id: 3, sentence: "Мы пьём сок.", options: ["сок", "сока", "соку"], correct: "сок" },
+        { id: 4, sentence: "Ты видишь Антона?", options: ["Антон", "Антона", "Антону"], correct: "Антона" },
+        { id: 5, sentence: "Она ест яблоко.", options: ["яблоко", "яблока", "яблоку"], correct: "яблоко" },
+        { id: 6, sentence: "Я слышу музыку.", options: ["музыка", "музыку", "музыке"], correct: "музыку" },
+        { id: 7, sentence: "Мы ждём друга.", options: ["друг", "друга", "другу"], correct: "друга" },
+        { id: 8, sentence: "Они покупают машину.", options: ["машина", "машину", "машины"], correct: "машину" },
+        { id: 9, sentence: "Я пью воду.", options: ["вода", "воду", "воды"], correct: "воду" },
+        { id: 10, sentence: "Вы знаете этот город?", options: ["город", "города", "городу"], correct: "город" },
+        { id: 11, sentence: "Он готовит суп.", options: ["суп", "супа", "супу"], correct: "суп" },
+        { id: 12, sentence: "Я встретил подругу.", options: ["подруга", "подругу", "подруги"], correct: "подругу" },
+        { id: 13, sentence: "Ты забыл ключ.", options: ["ключ", "ключа", "ключу"], correct: "ключ" },
+        { id: 14, sentence: "Мы зовём сестру.", options: ["сестра", "сестру", "сестре"], correct: "сестру" },
+        { id: 15, sentence: "Студент изучает историю.", options: ["история", "историю", "истории"], correct: "историю" },
+        { id: 16, sentence: "Я вижу окно.", options: ["окно", "окна", "окну"], correct: "окно" },
+        { id: 17, sentence: "Она рисует картину.", options: ["картина", "картину", "картине"], correct: "картину" },
+        { id: 18, sentence: "Мы любим папу.", options: ["папа", "папу", "папе"], correct: "папу" },
+        { id: 19, sentence: "Вы слышите радио?", options: ["радио", "радиа", "радиу"], correct: "радио" },
+        { id: 20, sentence: "Я знаю этого человека.", options: ["человек", "человека", "человеку"], correct: "человека" }
+    ];
+
+    let russianMaleVoice = null;
+
+    function loadVoices() {
+        const voices = window.speechSynthesis.getVoices();
+        // Bevorzugt russische männliche Stimmen (Dmitry, Pavel, etc.)
+        russianMaleVoice = voices.find(v => v.lang.startsWith('ru') && 
+            (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('dmitry') || v.name.toLowerCase().includes('pavel'))) 
+            || voices.find(v => v.lang.startsWith('ru'));
+    }
+
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    loadVoices();
+
+    function playAudio(text) {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel(); 
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.voice = russianMaleVoice;
+        utterance.lang = 'ru-RU';
+        utterance.rate = 0.8; 
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // Funktion zum Mischen eines Arrays
+    function shuffleArray(array) {
+        let shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-list');
+        quizData.forEach((task, index) => {
+            const card = document.createElement('div');
+            card.className = 'audio-card';
+            card.id = `card-${task.id}`;
+
+            const shuffledOptions = shuffleArray(task.options);
+
+            card.innerHTML = `
+                <div class="audio-controls">
+                    <button class="play-btn" onclick="playAudio('${task.sentence}')" title="Satz hören">▶️</button>
+                    <span>Aufgabe ${index + 1}</span>
+                </div>
+                <div class="options-container" id="options-${task.id}">
+                    ${shuffledOptions.map(opt => `
+                        <button class="opt-btn" onclick="checkAnswer(${task.id}, '${opt}')">${opt}</button>
+                    `).join('')}
+                </div>
+                <div id="sol-display-${task.id}" class="solution-display">
+                    Satz: „${task.sentence}“
+                </div>
+                <div class="controls-row">
+                    <button class="btn-reset" onclick="resetTask(${task.id})">Reset</button>
+                    <button class="btn-solution" onclick="showSolution(${task.id})">Lösung anzeigen</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    window.checkAnswer = function(id, selected) {
+        const task = quizData.find(t => t.id === id);
+        const buttons = document.querySelectorAll(`#options-${id} .opt-btn`);
+        
+        buttons.forEach(btn => {
+            btn.className = 'opt-btn'; 
+            if (btn.textContent === selected) {
+                btn.classList.add(selected === task.correct ? 'correct' : 'incorrect');
+            }
+        });
+    };
+
+    window.resetTask = function(id) {
+        const buttons = document.querySelectorAll(`#options-${id} .opt-btn`);
+        const solDiv = document.getElementById(`sol-display-${id}`);
+        buttons.forEach(btn => btn.className = 'opt-btn');
+        solDiv.style.display = 'none';
+    };
+
+    window.showSolution = function(id) {
+        const task = quizData.find(t => t.id === id);
+        const buttons = document.querySelectorAll(`#options-${id} .opt-btn`);
+        const solDiv = document.getElementById(`sol-display-${id}`);
+        
+        buttons.forEach(btn => {
+            btn.className = 'opt-btn';
+            if (btn.textContent === task.correct) {
+                btn.classList.add('correct');
+            }
+        });
+        
+        solDiv.style.display = 'block';
+    };
+
+    renderQuiz();
+</script>
+
+</body>
+</html>
