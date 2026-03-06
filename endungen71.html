@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Das Endungs-Puzzle (Akkusativ)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f5f6fa;
+            --card-bg: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary); }
+
+        .intro {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .exercise-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .exercise-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+
+        .sentence-part {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        /* Dropdown Styling */
+        select {
+            padding: 5px 10px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 1.1rem;
+            background-color: #fff;
+            cursor: pointer;
+            outline: none;
+            min-width: 80px;
+        }
+
+        /* Feedback Zustände */
+        select.is-correct {
+            border-color: var(--success);
+            background-color: #e8f5e9;
+            color: var(--success);
+        }
+
+        select.is-incorrect {
+            border-color: var(--error);
+            background-color: #ffebee;
+            color: var(--error);
+        }
+
+        .controls {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-sol { background-color: var(--accent); }
+        button:hover { opacity: 0.8; }
+
+        @media (max-width: 768px) {
+            .exercise-card { flex-direction: column; align-items: flex-start; }
+            .controls { margin-left: 0; width: 100%; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Endungs-Puzzle: Akkusativ (A1)</h2>
+
+    <div class="intro">
+        <strong>Anleitung:</strong> In den folgenden Sätzen fehlt die Endung des Objekts im Akkusativ. Wähle die richtige Endung aus dem Dropdown-Menü aus. 
+        Denke an die Regeln: „-у“ für weibliche Wörter, „-а“ für männlich belebte Wörter und „- (keine Endung)“ für männlich unbelebte Wörter.
+    </div>
+
+    <div id="puzzle-container" class="exercise-list">
+        <!-- Aufgaben werden per JS eingefügt -->
+    </div>
+
+    <div style="text-align:center; margin-top: 40px; color: #7f8c8d; font-size: 0.85rem;">
+        © Sprachassistent Russisch - Keine Tastatur erforderlich
+    </div>
+</div>
+
+<script>
+    const puzzleData = [
+        { id: 1, text: "Я читаю книг", options: ["-а", "-у", "-е"], correct: "-у", end: "." },
+        { id: 2, text: "Он любит мам", options: ["-а", "-у", "-ы"], correct: "-у", end: "." },
+        { id: 3, text: "Мы ждём пап", options: ["-у", "-а", "-ы"], correct: "-у", end: "." },
+        { id: 4, text: "Ты видишь стол", options: ["- ", "-а", "-у"], correct: "- ", end: "?" },
+        { id: 5, text: "Она пьёт вод", options: ["-а", "-у", "-ы"], correct: "-у", end: "." },
+        { id: 6, text: "Я знаю Антон", options: ["-а", "-у", "- "], correct: "-а", end: "." },
+        { id: 7, text: "Мы слушаем музык", options: ["-у", "-а", "-е"], correct: "-у", end: "." },
+        { id: 8, text: "Они едят суп", options: ["- ", "-а", "-у"], correct: "- ", end: "." },
+        { id: 9, text: "Вы зовёте сестр", options: ["-а", "-у", "-ы"], correct: "-у", end: "?" },
+        { id: 10, text: "Студент пишет стать", options: ["-я", "-ю", "-и"], correct: "-ю", end: "." },
+        { id: 11, text: "Я встретил друг", options: ["- ", "-а", "-у"], correct: "-а", end: "." },
+        { id: 12, text: "Мама готовит рыб", options: ["-а", "-у", "-ы"], correct: "-у", end: "." },
+        { id: 13, text: "Он открывает окн", options: ["-о", "-а", "-у"], correct: "-о", end: "." },
+        { id: 14, text: "Мы учим русск... язык", options: ["-ий", "-ую", "-ая"], correct: "-ий", end: "." },
+        { id: 15, text: "Я рисую машин", options: ["-а", "-у", "-е"], correct: "-у", end: "." },
+        { id: 16, text: "Ты помнишь Ир", options: ["-а", "-у", "-ы"], correct: "-у", end: "?" },
+        { id: 17, text: "Она видит врач", options: ["-а", "-у", "- "], correct: "-а", end: "." },
+        { id: 18, text: "Мы покупаем газет", options: ["-а", "-у", "-ы"], correct: "-у", end: "." },
+        { id: 19, text: "Вы пьёте сок", options: ["- ", "-а", "-у"], correct: "- ", end: "?" },
+        { id: 20, text: "Я вспоминаю истори", options: ["-я", "-ю", "-и"], correct: "-ю", end: "." }
+    ];
+
+    function renderPuzzle() {
+        const container = document.getElementById('puzzle-container');
+        puzzleData.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'exercise-card';
+            card.id = `card-${item.id}`;
+
+            card.innerHTML = `
+                <span class="sentence-part">${index + 1}. ${item.text}</span>
+                <select id="select-${item.id}" onchange="checkAnswer(${item.id})">
+                    <option value="" disabled selected>?</option>
+                    ${item.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                </select>
+                <span class="sentence-part">${item.end}</span>
+                <div class="controls">
+                    <button class="btn-reset" onclick="resetAnswer(${item.id})">Reset</button>
+                    <button class="btn-sol" onclick="showSolution(${item.id})">Lösung</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    window.checkAnswer = function(id) {
+        const item = puzzleData.find(d => d.id === id);
+        const select = document.getElementById(`select-${id}`);
+        
+        if (select.value === item.correct) {
+            select.className = 'is-correct';
+        } else {
+            select.className = 'is-incorrect';
+        }
+    };
+
+    window.resetAnswer = function(id) {
+        const select = document.getElementById(`select-${id}`);
+        select.value = "";
+        select.className = "";
+    };
+
+    window.showSolution = function(id) {
+        const item = puzzleData.find(d => d.id === id);
+        const select = document.getElementById(`select-${id}`);
+        select.value = item.correct;
+        select.className = 'is-correct';
+    };
+
+    document.addEventListener('DOMContentLoaded', renderPuzzle);
+</script>
+
+</body>
+</html>
