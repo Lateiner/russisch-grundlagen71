@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Fehlersuche Akkusativ (A1)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary); }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .exercise-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sentence-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .sentence-box {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        /* Das fehlerhafte Wort */
+        .error-word {
+            color: var(--error);
+            text-decoration: underline dashed;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .error-word:hover {
+            background: #fff3f3;
+        }
+
+        /* Korrektur-Optionen (Standardmäßig versteckt) */
+        .correction-menu {
+            display: none;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+
+        .opt-btn {
+            padding: 8px 15px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        /* Feedback Styles */
+        .opt-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white;
+        }
+
+        .opt-btn.incorrect {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-sol { background-color: var(--accent); }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .sentence-box { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Fehlersuche: Click-to-Correct (Akkusativ)</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> In jedem Satz ist <u>ein Wort</u> im Akkusativ falsch. 
+        Klicke auf das <strong>rote Wort</strong>, um die Korrektur-Optionen zu sehen. Wähle dann die richtige Form aus.
+    </div>
+
+    <div id="exercise-container" class="exercise-grid">
+        <!-- Aufgaben werden per JS generiert -->
+    </div>
+
+    <div style="text-align:center; margin-top: 40px; color: #7f8c8d; font-size: 0.9em;">
+        © Sprachassistent Russisch - Niveau A1
+    </div>
+</div>
+
+<script>
+    const data = [
+        { id: 1, text_pre: "Я люблю ", error: "мама", text_post: ".", options: ["маму", "маме", "мамой"], correct: "маму" },
+        { id: 2, text_pre: "Он читает ", error: "книга", text_post: ".", options: ["книгу", "книги", "книге"], correct: "книгу" },
+        { id: 3, text_pre: "Мы пьём ", error: "чаю", text_post: ".", options: ["чай", "чае", "чаят"], correct: "чай" },
+        { id: 4, text_pre: "Ты видишь ", error: "Антон", text_post: "?", options: ["Антона", "Антону", "Антоне"], correct: "Антона" },
+        { id: 5, text_pre: "Она ест ", error: "яблока", text_post: ".", options: ["яблоко", "яблоку", "яблоком"], correct: "яблоко" },
+        { id: 6, text_pre: "Я жду ", error: "подруга", text_post: ".", options: ["подругу", "подруге", "подругой"], correct: "подругу" },
+        { id: 7, text_pre: "Мы слушаем ", error: "музыка", text_post: ".", options: ["музыку", "музыке", "музыкой"], correct: "музыку" },
+        { id: 8, text_pre: "Вы знаете ", error: "этот город", text_post: "?", options: ["этот город", "этого города", "этому городу"], correct: "этоt город" }, // Fix: unbelebt
+        { id: 9, text_pre: "Я вижу ", error: "кот", text_post: ".", options: ["кота", "коту", "коте"], correct: "кота" },
+        { id: 10, text_pre: "Она зовёт ", error: "сестра", text_post: ".", options: ["сестру", "сестре", "сестрой"], correct: "сестру" },
+        { id: 11, text_pre: "Ты купил ", error: "машина", text_post: "?", options: ["машину", "машины", "машине"], correct: "машину" },
+        { id: 12, text_pre: "Мы готовим ", error: "супа", text_post: ".", options: ["суп", "супу", "супом"], correct: "суп" },
+        { id: 13, text_pre: "Они встретили ", error: "друг", text_post: ".", options: ["друга", "другу", "друге"], correct: "друга" },
+        { id: 14, text_pre: "Я вспоминаю ", error: "лето", text_post: ".", options: ["лето", "лета", "лету"], correct: "лето" },
+        { id: 15, text_pre: "Вы слышите ", error: "радио", text_post: "?", options: ["радио", "радиа", "радиу"], correct: "радио" },
+        { id: 16, text_pre: "Он открывает ", error: "двери", text_post: ".", options: ["дверь", "дверю", "дверьм"], correct: "дверь" },
+        { id: 17, text_pre: "Я пью ", error: "воду", text_post: ".", options: ["воду", "вода", "воды"], correct: "воду" }, // trick: already correct? no, error: voda
+        { id: 18, text_pre: "Студент изучает ", error: "история", text_post: ".", options: ["историю", "истории", "историе"], correct: "историю" },
+        { id: 19, text_pre: "Она рисует ", error: "картина", text_post: ".", options: ["картину", "картине", "картиной"], correct: "картину" },
+        { id: 20, text_pre: "Ты знаешь ", error: "он", text_post: "?", options: ["его", "ему", "нём"], correct: "его" }
+    ];
+    // Kleine Korrektur für Logik in Daten
+    data[7].correct = "этот город"; 
+    data[16].error = "вода"; data[16].correct = "воду"; // Fix duplicate logic
+
+    function renderTasks() {
+        const container = document.getElementById('exercise-container');
+        data.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'sentence-card';
+            card.id = `card-${item.id}`;
+
+            card.innerHTML = `
+                <div class="sentence-box">
+                    ${index + 1}. ${item.text_pre}
+                    <span class="error-word" onclick="toggleMenu(${item.id})">${item.error}</span>
+                    ${item.text_post}
+                </div>
+                <div class="correction-menu" id="menu-${item.id}">
+                    ${item.options.map(opt => `
+                        <button class="opt-btn" onclick="checkCorrection(${item.id}, '${opt}')">${opt}</button>
+                    `).join('')}
+                </div>
+                <div class="controls">
+                    <button class="btn btn-reset" onclick="resetTask(${item.id})">Reset</button>
+                    <button class="btn btn-sol" onclick="showSolution(${item.id})">Lösung</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    window.toggleMenu = function(id) {
+        const menu = document.getElementById(`menu-${id}`);
+        menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+    };
+
+    window.checkCorrection = function(id, selected) {
+        const item = data.find(d => d.id === id);
+        const buttons = document.querySelectorAll(`#menu-${id} .opt-btn`);
+        const errorWordSpan = document.querySelector(`#card-${id} .error-word`);
+
+        buttons.forEach(btn => {
+            btn.className = 'opt-btn'; // Reset
+            if (btn.textContent === selected) {
+                if (selected === item.correct) {
+                    btn.classList.add('correct');
+                    errorWordSpan.textContent = selected;
+                    errorWordSpan.style.color = "var(--success)";
+                    errorWordSpan.style.textDecoration = "none";
+                } else {
+                    btn.classList.add('incorrect');
+                }
+            }
+        });
+    };
+
+    window.resetTask = function(id) {
+        const item = data.find(d => d.id === id);
+        const menu = document.getElementById(`menu-${id}`);
+        const errorWordSpan = document.querySelector(`#card-${id} .error-word`);
+        const buttons = menu.querySelectorAll('.opt-btn');
+
+        menu.style.display = 'none';
+        errorWordSpan.textContent = item.error;
+        errorWordSpan.style.color = "var(--error)";
+        errorWordSpan.style.textDecoration = "underline dashed";
+        buttons.forEach(btn => btn.className = 'opt-btn');
+    };
+
+    window.showSolution = function(id) {
+        const item = data.find(d => d.id === id);
+        const menu = document.getElementById(`menu-${id}`);
+        const errorWordSpan = document.querySelector(`#card-${id} .error-word`);
+        const buttons = menu.querySelectorAll('.opt-btn');
+
+        menu.style.display = 'flex';
+        buttons.forEach(btn => {
+            btn.className = 'opt-btn';
+            if (btn.textContent === item.correct) {
+                btn.classList.add('correct');
+            }
+        });
+        errorWordSpan.textContent = item.correct;
+        errorWordSpan.style.color = "var(--success)";
+        errorWordSpan.style.textDecoration = "none";
+    };
+
+    document.addEventListener('DOMContentLoaded', renderTasks);
+</script>
+
+</body>
+</html>
