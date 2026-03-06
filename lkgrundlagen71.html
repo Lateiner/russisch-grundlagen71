@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Lernkartei: Verben & Akkusativ</title>
+    <style>
+        :root {
+            --primary-green: #27ae60;
+            --dark-green: #1e8449;
+            --light-green: #e8f5e9;
+            --bg-color: #f0f4f0;
+            --text-color: #2c3e50;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--dark-green);
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .progress {
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: var(--primary-green);
+            font-size: 1.1rem;
+        }
+
+        /* Flashcard 3D Effekt */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 300px;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .flashcard {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            border-radius: 15px;
+            background: white;
+            border: 2px solid var(--primary-green);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background-color: var(--light-green);
+        }
+
+        .card-text {
+            text-align: center;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            font-weight: 600;
+        }
+
+        .note {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-weight: normal;
+        }
+
+        /* Buttons */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .nav-buttons {
+            grid-column: span 2;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: var(--primary-green);
+            color: white;
+            transition: background 0.3s, transform 0.1s;
+            flex: 1;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: var(--dark-green);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        /* Keyboard Info */
+        .keyboard-hint {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #95a5a6;
+        }
+
+        @media (max-width: 480px) {
+            .flashcard-container {
+                height: 250px;
+            }
+            .card-text {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Russisch Vokabeltrainer</h1>
+        <div class="progress" id="progress">1 / 72</div>
+
+        <div class="flashcard-container" id="cardContainer">
+            <div class="flashcard" id="card">
+                <div class="card-face card-front">
+                    <div class="card-text" id="frontText">Загрузка...</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="card-text" id="backText">Laden...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="nav-buttons">
+                <button id="prevBtn">← Vorherige</button>
+                <button id="nextBtn">Nächste →</button>
+            </div>
+            <button id="shuffleBtn" class="btn-secondary">🔀 Mischen</button>
+            <button id="homeBtn" class="btn-secondary">🏠 An den Anfang</button>
+        </div>
+
+        <div class="keyboard-hint">
+            Tastatur: Pfeiltasten (← →), Leertaste/Enter (Umdrehen), Pos1 (Anfang)
+        </div>
+    </div>
+
+    <script>
+        // Die Vokabelliste
+        const rawData = [
+            "вспомина́ть / вспо́мнить – sich erinnern",
+            "встреча́ть / встре́тить – treffen / begegnen",
+            "гото́вить / пригото́вить – kochen / vorbereiten",
+            "есть / съесть – essen",
+            "ждать / подожда́ть – warten",
+            "забыва́ть / забы́ть – vergessen",
+            "задава́ть / зада́ть – (eine Frage) stellen",
+            "закрыва́ть / закры́ть – schließen",
+            "запомина́ть / запо́мнить – sich merken / einprägen",
+            "звать / позва́ть – rufen / nennen",
+            "изуча́ть / изучи́ть – studieren / erlernen",
+            "зака́нчивать / зако́нчить – beenden",
+            "покупа́ть / купи́ть – kaufen",
+            "люби́ть / полюби́ть – lieben / mögen",
+            "открыва́ть / откры́ть – öffnen",
+            "ви́деть / уви́деть – sehen",
+            "слы́шать / услы́шать – hören",
+            "знать / узна́ть – wissen / kennen",
+            "пить / вы́пить – trinken",
+            "рисова́ть / нарисова́ть – zeichnen / malen",
+            "смотре́ть / посмотре́ть – schauen / ansehen",
+            "учи́ть / вы́учить – lernen / auswendig lernen",
+            "понима́ть / поня́ть – verstehen",
+            "приглаша́ть / пригласи́ть – einladen",
+            "иска́ть / поиска́ть – suchen",
+            "ма́ма – Mutter",
+            "па́па – Vater",
+            "брат – Bruder",
+            "сестра́ – Schwester",
+            "друг – Freund",
+            "подру́га – Freundin",
+            "челове́к – Mensch",
+            "преподава́тель – Lehrer / Dozent",
+            "студе́нт – Student",
+            "соба́ка – Hund",
+            "кот – Kater",
+            "кни́га – Buch",
+            "газе́та – Zeitung",
+            "журна́л – Zeitschrift",
+            "письмо́ – Brief",
+            "сло́во – Wort",
+            "вопро́с – Frage",
+            "отве́т – Antwort",
+            "исто́рия – Geschichte",
+            "язы́к – Sprache",
+            "суп – Suppe",
+            "борщ – Borschtsch",
+            "хлеб – Brot",
+            "бутербро́д – Butterbrot / Sandwich",
+            "я́блоко – Apfel",
+            "пи́цца – Pizza",
+            "чай – Tee",
+            "ко́фе – Kaffee",
+            "вода́ – Wasser",
+            "сок – Saft",
+            "за́втрак – Frühstück",
+            "обе́д – Mittagessen",
+            "у́жин – Abendessen",
+            "фильм – Film",
+            "му́зыка – Musik",
+            "пе́сня – Lied",
+            "ра́дио – Radio",
+            "карти́на – Bild",
+            "маши́на – Auto",
+            "авто́бус – Bus",
+            "дом – Haus",
+            "го́род – Stadt",
+            "ключ – Schlüssel",
+            "окно́ – Fenster",
+            "дверь – Tür",
+            "ле́то – Sommer",
+            "но́мер – Nummer"
+        ];
+
+        // Daten parsen
+        let cards = rawData.map(line => {
+            const parts = line.split(" – ");
+            // Entferne Nummerierung am Anfang
+            const front = parts[0].replace(/^\d+\.\s*/, "").trim();
+            const back = parts[1].trim();
+            return { front, back };
+        });
+
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // Elemente
+        const card = document.getElementById('card');
+        const frontText = document.getElementById('frontText');
+        const backText = document.getElementById('backText');
+        const progress = document.getElementById('progress');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const homeBtn = document.getElementById('homeBtn');
+
+        // Funktion: UI aktualisieren
+        function updateUI() {
+            isFlipped = false;
+            card.classList.remove('is-flipped');
+            
+            const currentCard = cards[currentIndex];
+            frontText.innerText = currentCard.front;
+            backText.innerText = currentCard.back;
+            
+            // Dynamische Schriftgröße
+            adjustFontSize(frontText, currentCard.front);
+            adjustFontSize(backText, currentCard.back);
+
+            progress.innerText = `${currentIndex + 1} / ${cards.length}`;
+        }
+
+        function adjustFontSize(element, text) {
+            if (text.length > 30) {
+                element.style.fontSize = "1.1rem";
+            } else if (text.length > 20) {
+                element.style.fontSize = "1.4rem";
+            } else {
+                element.style.fontSize = "1.8rem";
+            }
+        }
+
+        // Navigation
+        function nextCard() {
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+                updateUI();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateUI();
+            }
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            card.classList.toggle('is-flipped');
+        }
+
+        function shuffleCards() {
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+            currentIndex = 0;
+            updateUI();
+        }
+
+        function goHome() {
+            currentIndex = 0;
+            updateUI();
+        }
+
+        // Event Listener
+        cardContainer.addEventListener('click', flipCard);
+        nextBtn.addEventListener('click', nextCard);
+        prevBtn.addEventListener('click', prevCard);
+        shuffleBtn.addEventListener('click', shuffleCards);
+        homeBtn.addEventListener('click', goHome);
+
+        // Tastatursteuerung
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight':
+                    nextCard();
+                    break;
+                case 'ArrowLeft':
+                    prevCard();
+                    break;
+                case ' ':
+                case 'Enter':
+                    e.preventDefault(); // Verhindert Scrollen bei Leertaste
+                    flipCard();
+                    break;
+                case 'Home':
+                    goHome();
+                    break;
+            }
+        });
+
+        // Initialisierung
+        updateUI();
+    </script>
+</body>
+</html>
