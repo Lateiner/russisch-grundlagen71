@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Bild-Satz-Matching (Akkusativ)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #fdfdfd;
+            --card-bg: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary); margin-bottom: 10px; }
+
+        .intro {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .exercise-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .exercise-grid { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+        .image-placeholder {
+            font-size: 3rem;
+            text-align: center;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px dashed #ccc;
+        }
+
+        .situation-desc {
+            font-size: 0.9rem;
+            color: #636e72;
+            text-align: center;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: block;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .option-label:hover {
+            border-color: var(--accent);
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        /* Feedback Zustände */
+        .is-correct {
+            border-color: var(--success) !important;
+            background-color: #e8f5e9 !important;
+            color: var(--success) !important;
+            font-weight: bold;
+        }
+
+        .is-incorrect {
+            border-color: var(--error) !important;
+            background-color: #ffebee !important;
+            color: var(--error) !important;
+        }
+
+        .controls {
+            margin-top: auto;
+            display: flex;
+            gap: 10px;
+            padding-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .btn-reset { background-color: #b2bec3; }
+        .btn-sol { background-color: var(--accent); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Bild-Satz-Matching: Akkusativ (A1)</h2>
+
+    <div class="intro">
+        <strong>Anleitung:</strong> Schau dir die Situation (Bild/Beschreibung) an. Welcher Satz beschreibt die Handlung grammatikalisch richtig im Akkusativ? Wähle die richtige Antwort aus.
+    </div>
+
+    <div id="quiz" class="exercise-grid"></div>
+
+    <div style="text-align:center; margin-top: 40px; color: #7f8c8d; font-size: 0.85rem;">
+        © Sprachassistent Russisch - Keine kyrillische Tastatur benötigt
+    </div>
+</div>
+
+<script>
+    const exercises = [
+        { id: 1, icon: "🍎", desc: "Ein Junge isst einen Apfel.", options: ["Я ем яблоко.", "Я ем яблока.", "Я ем яблоку."], correct: "Я ем яблоко." },
+        { id: 2, icon: "📖", desc: "Ein Mädchen liest ein Buch.", options: ["Она читает книга.", "Она читает книгу.", "Она читает книге."], correct: "Она читает книгу." },
+        { id: 3, icon: "💧", desc: "Ein Mann trinkt Wasser.", options: ["Он пьёт вода.", "Он пьёт воду.", "Он пьёт воды."], correct: "Он пьёт воду." },
+        { id: 4, icon: "👩‍👦", desc: "Ein Kind liebt seine Mutter.", options: ["Я люблю мама.", "Я люблю маму.", "Я люблю маме."], correct: "Я люблю маму." },
+        { id: 5, icon: "🙋‍♂️", desc: "Ich sehe einen Freund (männlich).", options: ["Я вижу друг.", "Я вижу друга.", "Я вижу другу."], correct: "Я вижу друга." },
+        { id: 6, icon: "🍲", desc: "Oma kocht eine Suppe.", options: ["Она готовит суп.", "Она готовит супа.", "Она готовит супу."], correct: "Она готовит суп." },
+        { id: 7, icon: "🎸", desc: "Wir hören Musik.", options: ["Мы слушаем музыка.", "Мы слушаем музыку.", "Мы слушаем музыке."], correct: "Мы слушаем музыку." },
+        { id: 8, icon: "🚗", desc: "Ein Mann kauft ein Auto.", options: ["Он покупает машину.", "Он покупает машина.", "Он покупает машине."], correct: "Он покупает машину." },
+        { id: 9, icon: "🛑", desc: "Ich sehe ein Haus (männlich unbelebt).", options: ["Я вижу дом.", "Я вижу дома.", "Я вижу дому."], correct: "Я вижу дом." },
+        { id: 10, icon: "💬", desc: "Ein Student stellt eine Frage.", options: ["Он задаёт вопрос.", "Он задаёт вопроса.", "Он задаёт вопросу."], correct: "Он задаёт вопрос." },
+        { id: 11, icon: "👯‍♀️", desc: "Er trifft eine Freundin.", options: ["Он встретил подруга.", "Он встретил подругу.", "Он встретил подруги."], correct: "Он встретил подругу." },
+        { id: 12, icon: "☕", desc: "Ich trinke Kaffee (männlich unbelebt).", options: ["Я пью кофе.", "Я пью кофю.", "Я пью кофя."], correct: "Я пью кофе." },
+        { id: 13, icon: "🔑", desc: "Du hast den Schlüssel vergessen.", options: ["Ты забыл ключ.", "Ты забыл ключа.", "Ты забыл ключу."], correct: "Ты забыл ключ." },
+        { id: 14, icon: "🚪", desc: "Sie schließt die Tür.", options: ["Она закрывает дверь.", "Она закрывает двери.", "Она закрывает дверю."], correct: "Она закрывает дверь." },
+        { id: 15, icon: "🖼️", desc: "Ich zeichne ein Bild (f).", options: ["Я рисую картина.", "Я рисую картину.", "Я рисую картине."], correct: "Я рисую картину." },
+        { id: 16, icon: "🚉", desc: "Wir warten auf den Bus.", options: ["Мы ждём автобус.", "Мы ждём автобуса.", "Мы ждём автобусу."], correct: "Мы ждём автобус." },
+        { id: 17, icon: "🐈", desc: "Ich sehe einen Kater (belegt).", options: ["Я вижу кот.", "Я вижу кота.", "Я вижу коту."], correct: "Я вижу кота." },
+        { id: 18, icon: "🪟", desc: "Er öffnet das Fenster.", options: ["Он открывает окно.", "Он открывает окна.", "Он открывает окну."], correct: "Он открывает окно." },
+        { id: 19, icon: "🏫", desc: "Sie studiert Geschichte.", options: ["Она изучает история.", "Она изучает историю.", "Она изучает истории."], correct: "Она изучает историю." },
+        { id: 20, icon: "📱", desc: "Ich weiß die Nummer.", options: ["Я знаю номер.", "Я знаю номера.", "Я знаю номеру."], correct: "Я знаю номер." }
+    ];
+
+    function renderQuiz() {
+        const quizContainer = document.getElementById('quiz');
+        exercises.forEach((ex) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = `card-${ex.id}`;
+
+            card.innerHTML = `
+                <div class="image-placeholder">${ex.icon}</div>
+                <div class="situation-desc">„${ex.desc}“</div>
+                <div class="options">
+                    ${ex.options.map(opt => `
+                        <label class="option-label" id="label-${ex.id}-${opt.replace(/\s/g, '')}">
+                            <input type="radio" name="ex-${ex.id}" value="${opt}" onchange="checkAnswer(${ex.id}, '${opt}')">
+                            ${opt}
+                        </label>
+                    `).join('')}
+                </div>
+                <div class="controls">
+                    <button class="btn-reset" onclick="resetEx(${ex.id})">Reset</button>
+                    <button class="btn-sol" onclick="showSol(${ex.id})">Lösung</button>
+                </div>
+            `;
+            quizContainer.appendChild(card);
+        });
+    }
+
+    window.checkAnswer = function(id, selected) {
+        const ex = exercises.find(e => e.id === id);
+        const labels = document.querySelectorAll(`#card-${id} .option-label`);
+        
+        labels.forEach(label => {
+            label.className = 'option-label'; // Reset
+            const radio = label.querySelector('input');
+            if (radio.value === selected) {
+                label.classList.add(selected === ex.correct ? 'is-correct' : 'is-incorrect');
+            }
+        });
+    };
+
+    window.resetEx = function(id) {
+        const labels = document.querySelectorAll(`#card-${id} .option-label`);
+        labels.forEach(l => {
+            l.className = 'option-label';
+            l.querySelector('input').checked = false;
+        });
+    };
+
+    window.showSol = function(id) {
+        const ex = exercises.find(e => e.id === id);
+        const labels = document.querySelectorAll(`#card-${id} .option-label`);
+        
+        labels.forEach(label => {
+            const radio = label.querySelector('input');
+            label.className = 'option-label';
+            if (radio.value === ex.correct) {
+                radio.checked = true;
+                label.classList.add('is-correct');
+            }
+        });
+    };
+
+    document.addEventListener('DOMContentLoaded', renderQuiz);
+</script>
+
+</body>
+</html>
