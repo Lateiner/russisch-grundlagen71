@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Akkusativ-Training (A1)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary); }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .exercise-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .exercise-row {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .sentence-text {
+            font-size: 1.1em;
+            white-space: nowrap;
+        }
+
+        /* Dropdown Styling */
+        select {
+            padding: 8px 12px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 1em;
+            background-color: white;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+        }
+
+        .is-correct {
+            border-color: var(--success) !important;
+            background-color: #e8f5e9 !important;
+            color: var(--success);
+        }
+
+        .is-incorrect {
+            border-color: var(--error) !important;
+            background-color: #ffebee !important;
+            color: var(--error);
+        }
+
+        /* Buttons */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-sol { background-color: var(--accent); }
+        button:hover { opacity: 0.8; }
+
+        @media (max-width: 768px) {
+            .exercise-row { flex-direction: column; align-items: flex-start; }
+            .controls { margin-left: 0; width: 100%; justify-content: space-between; }
+            .sentence-text { white-space: normal; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Verben & Akkusativ: Wähle die richtige Form</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Wähle für jedes Verb das passende Objekt im Akkusativ aus. Achte auf das Geschlecht und darauf, ob das Wort belebt (Personen/Tiere) oder unbelebt (Gegenstände) ist. 
+        Feedback erfolgt sofort!
+    </div>
+
+    <div id="exercise-container" class="exercise-grid">
+        <!-- Aufgaben werden per JS geladen -->
+    </div>
+
+    <div style="text-align:center; margin-top: 40px; color: #7f8c8d; font-size: 0.9em;">
+        © Sprachassistent Russisch - Niveau A1
+    </div>
+</div>
+
+<script>
+    const data = [
+        { id: 1, start: "Я люблю", options: ["мама", "маму", "маме"], correct: "маму", end: "." },
+        { id: 2, start: "Ты читаешь", options: ["книга", "книгу", "книги"], correct: "книгу", end: "." },
+        { id: 3, start: "Он ест", options: ["суп", "супа", "супу"], correct: "суп", end: "." },
+        { id: 4, start: "Мы ждём", options: ["друг", "друга", "другу"], correct: "друга", end: "." },
+        { id: 5, start: "Она пьёт", options: ["вода", "воду", "воды"], correct: "воду", end: "." },
+        { id: 6, start: "Вы слушаете", options: ["музыка", "музыку", "музыке"], correct: "музыку", end: "." },
+        { id: 7, start: "Они покупают", options: ["яблоко", "яблока", "яблоку"], correct: "яблоко", end: "." },
+        { id: 8, start: "Студент знает", options: ["ответ", "ответа", "ответу"], correct: "ответ", end: "." },
+        { id: 9, start: "Я вижу", options: ["Антон", "Антона", "Антону"], correct: "Антона", end: "." },
+        { id: 10, start: "Ты пьёшь", options: ["кофе", "кофю", "кофя"], correct: "кофе", end: "." },
+        { id: 11, start: "Мы рисуем", options: ["картина", "картину", "картине"], correct: "картину", end: "." },
+        { id: 12, start: "Мама готовит", options: ["завтрак", "завтрака"], correct: "завтрак", end: "." },
+        { id: 13, start: "Я слышу", options: ["ты", "тебя", "тебе"], correct: "тебя", end: "." },
+        { id: 14, start: "Она открывает", options: ["окно", "окна", "окну"], correct: "окно", end: "." },
+        { id: 15, start: "Вы зовёте", options: ["сестра", "сестру", "сестре"], correct: "сестру", end: "." },
+        { id: 16, start: "Он забыл", options: ["ключ", "ключа", "ключу"], correct: "ключ", end: "." },
+        { id: 17, start: "Мы учим", options: ["язык", "языка"], correct: "язык", end: "." },
+        { id: 18, start: "Я хочу задать", options: ["вопрос", "вопроса"], correct: "вопрос", end: "." },
+        { id: 19, start: "Она вспоминает", options: ["лето", "лета"], correct: "лето", end: "." },
+        { id: 20, start: "Ты знаешь", options: ["он", "его", "ему"], correct: "его", end: "?" }
+    ];
+
+    function init() {
+        const container = document.getElementById('exercise-container');
+        data.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'exercise-row';
+            row.id = `row-${item.id}`;
+
+            row.innerHTML = `
+                <span class="sentence-text">${index + 1}. ${item.start}</span>
+                <select id="select-${item.id}" onchange="checkAnswer(${item.id})">
+                    <option value="" disabled selected>...?</option>
+                    ${item.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                </select>
+                <span class="sentence-text">${item.end}</span>
+                <div class="controls">
+                    <button class="btn-reset" onclick="resetAnswer(${item.id})">Reset</button>
+                    <button class="btn-sol" onclick="showSolution(${item.id})">Lösung</button>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    window.checkAnswer = function(id) {
+        const item = data.find(d => d.id === id);
+        const select = document.getElementById(`select-${id}`);
+        
+        if (select.value === item.correct) {
+            select.className = 'is-correct';
+        } else {
+            select.className = 'is-incorrect';
+        }
+    };
+
+    window.resetAnswer = function(id) {
+        const select = document.getElementById(`select-${id}`);
+        select.value = "";
+        select.className = "";
+    };
+
+    window.showSolution = function(id) {
+        const item = data.find(d => d.id === id);
+        const select = document.getElementById(`select-${id}`);
+        select.value = item.correct;
+        select.className = 'is-correct';
+    };
+
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
