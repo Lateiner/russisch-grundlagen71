@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Verben mit dem Akkusativ</title>
+    <!-- Polyfill für Drag and Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary); }
+
+        .intro {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .exercise-block {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            background: #fff;
+        }
+
+        .exercise-title {
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: block;
+            color: #34495e;
+        }
+
+        /* Drag & Drop Styles */
+        .drag-area {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            min-height: 50px;
+            padding: 10px;
+            background: #f1f2f6;
+            border-radius: 6px;
+        }
+
+        .drag-item {
+            background: var(--accent);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .drop-zones {
+            display: flex;
+            gap: 20px;
+        }
+
+        .drop-zone {
+            flex: 1;
+            min-height: 80px;
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            background: white;
+        }
+
+        .drop-zone h4 { margin: 0 0 10px 0; font-size: 0.9em; color: #7f8c8d; }
+
+        /* Input & Feedback Styles */
+        select, .option-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            background: white;
+            transition: 0.2s;
+        }
+
+        .is-correct { border-color: var(--success) !important; background-color: #e8f5e9 !important; color: var(--success) !important; font-weight: bold; }
+        .is-incorrect { border-color: var(--error) !important; background-color: #ffebee !important; color: var(--error) !important; }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-row button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .btn-reset { background: #95a5a6; color: white; }
+        .btn-sol { background: var(--accent); color: white; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .drop-zones { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Verben mit dem Akkusativ (A1)</h2>
+
+    <div class="intro">
+        <h3>Einführung</h3>
+        <p>Der Akkusativ (Винительный падеж) beschreibt das direkte Ziel einer Handlung. Wir fragen: 
+           <strong>Кого?</strong> (Wen? - belebt) oder <strong>Что?</strong> (Was? - unbelebt).</p>
+        <ul>
+            <li>Weibliche Nomen (мама, книга): Endung <strong>-у</strong> (маму, книгу).</li>
+            <li>Männliche belebte Nomen (Антон, друг): Endung <strong>-а / -я</strong> (Антона, друга).</li>
+            <li>Männliche unbelebte & sächliche Nomen: <strong>Keine Änderung</strong> (борщ, окно).</li>
+        </ul>
+    </div>
+
+    <div id="exercises"></div>
+
+</div>
+
+<script>
+    const exercises = [
+        // Sortieraufgaben (1-4)
+        { id: 1, type: 'sort', q: 'Sortiere: Belebt (Person/Tier) vs. Unbelebt (Gegenstand)', word: 'Антон', correct: 'belebt' },
+        { id: 2, type: 'sort', q: 'Sortiere: Belebt vs. Unbelebt', word: 'Борщ', correct: 'unbelebt' },
+        { id: 3, type: 'sort', q: 'Sortiere: Belebt vs. Unbelebt', word: 'Собака', correct: 'belebt' },
+        { id: 4, type: 'sort', q: 'Sortiere: Belebt vs. Unbelebt', word: 'Журнал', correct: 'unbelebt' },
+
+        // Endungen (5-12)
+        { id: 5, type: 'mc', q: 'Я люблю (мама) ...', options: ['мама', 'маму', 'маме'], correct: 'маму' },
+        { id: 6, type: 'mc', q: 'Ты читаешь (книга) ...', options: ['книгу', 'книга', 'книги'], correct: 'книгу' },
+        { id: 7, type: 'mc', q: 'Он ест (яблоко) ...', options: ['яблоко', 'яблока', 'яблоку'], correct: 'яблоко' },
+        { id: 8, type: 'mc', q: 'Мы видим (Антон) ...', options: ['Антон', 'Антона', 'Антону'], correct: 'Антона' },
+        { id: 9, type: 'mc', q: 'Вы пьёте (кофе) ...', options: ['кофе', 'кофю', 'кофя'], correct: 'кофе' },
+        { id: 10, type: 'mc', q: 'Они ждут (автобус) ...', options: ['автобус', 'автобуса', 'автобусу'], correct: 'автоbus' }, // Typo fix
+        { id: 11, type: 'mc', q: 'Я рисую (машина) ...', options: ['машину', 'машина', 'машине'], correct: 'машину' },
+        { id: 12, type: 'mc', q: 'Студент слушает (преподаватель) ...', options: ['преподаватель', 'преподавателя'], correct: 'преподавателя' },
+
+        // Pronomen (13-16)
+        { id: 13, type: 'mc', q: 'Я слышу (ты) ...', options: ['ты', 'тебя', 'тебе'], correct: 'тебя' },
+        { id: 14, type: 'mc', q: 'Ты знаешь (я) ...?', options: ['я', 'меня', 'мне'], correct: 'меня' },
+        { id: 15, type: 'mc', q: 'Мы любим (вы) ...', options: ['вы', 'вас', 'вам'], correct: 'вас' },
+        { id: 16, type: 'mc', q: 'Он ждёт (она) ...', options: ['она', 'её', 'ей'], correct: 'её' },
+
+        // Logik & Fragen (17-20)
+        { id: 17, type: 'mc', q: 'Welche Frage passt zu „Я вижу брата“?', options: ['Кого?', 'Что?'], correct: 'Кого?' },
+        { id: 18, type: 'mc', q: 'Welche Frage passt zu „Я читаю текст“?', options: ['Кого?', 'Что?'], correct: 'Что?' },
+        { id: 19, type: 'mc', q: 'Welcher Satz ist korrekt?', options: ['Я ем супа.', 'Я ем суп.'], correct: 'Я ем суп.' },
+        { id: 20, type: 'mc', q: 'Was ist die Akkusativform von „подруга“?', options: ['подругу', 'подруга', 'подруги'], correct: 'подругу' }
+    ];
+    exercises[9].correct = 'автобус';
+
+    const container = document.getElementById('exercises');
+
+    function createExercise(ex, index) {
+        const div = document.createElement('div');
+        div.className = 'exercise-block';
+        div.id = `ex-${ex.id}`;
+
+        let html = `<span class="exercise-title">${index + 1}. ${ex.q}</span>`;
+
+        if (ex.type === 'sort') {
+            html += `
+                <div class="drag-area" id="area-${ex.id}">
+                    <div class="drag-item" draggable="true" id="item-${ex.id}" ondragstart="drag(event)">${ex.word}</div>
+                </div>
+                <div class="drop-zones">
+                    <div class="drop-zone" ondrop="drop(event, ${ex.id}, 'belebt')" ondragover="allowDrop(event)">
+                        <h4>Belebt (Кого?)</h4>
+                    </div>
+                    <div class="drop-zone" ondrop="drop(event, ${ex.id}, 'unbelebt')" ondragover="allowDrop(event)">
+                        <h4>Unbelebt (Что?)</h4>
+                    </div>
+                </div>`;
+        } else {
+            html += `<select id="input-${ex.id}" onchange="checkMC(${ex.id})">
+                        <option value="" disabled selected>Antwort wählen...</option>
+                        ${ex.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>`;
+        }
+
+        html += `
+            <div class="btn-row">
+                <button class="btn-reset" onclick="resetEx(${ex.id})">Zurücksetzen</button>
+                <button class="btn-sol" onclick="showSol(${ex.id})">Lösung anzeigen</button>
+            </div>`;
+        
+        div.innerHTML = html;
+        container.appendChild(div);
+    }
+
+    // Drag and Drop Funktionen
+    window.allowDrop = (ev) => ev.preventDefault();
+    window.drag = (ev) => ev.dataTransfer.setData("text", ev.target.id);
+    
+    window.drop = (ev, exId, zoneType) => {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const item = document.getElementById(data);
+        const ex = exercises.find(e => e.id === exId);
+        
+        ev.currentTarget.appendChild(item);
+        
+        if (zoneType === ex.correct) {
+            item.className = 'drag-item is-correct';
+        } else {
+            item.className = 'drag-item is-incorrect';
+        }
+    };
+
+    // Multiple Choice Check
+    window.checkMC = (id) => {
+        const ex = exercises.find(e => e.id === id);
+        const select = document.getElementById(`input-${id}`);
+        if (select.value === ex.correct) {
+            select.className = 'is-correct';
+        } else {
+            select.className = 'is-incorrect';
+        }
+    };
+
+    // Reset
+    window.resetEx = (id) => {
+        const ex = exercises.find(e => e.id === id);
+        if (ex.type === 'sort') {
+            const item = document.getElementById(`item-${id}`);
+            document.getElementById(`area-${id}`).appendChild(item);
+            item.className = 'drag-item';
+        } else {
+            const select = document.getElementById(`input-${id}`);
+            select.value = "";
+            select.className = "";
+        }
+    };
+
+    // Solution
+    window.showSol = (id) => {
+        const ex = exercises.find(e => e.id === id);
+        if (ex.type === 'sort') {
+            const item = document.getElementById(`item-${id}`);
+            const zones = document.querySelectorAll(`#ex-${id} .drop-zone`);
+            const targetIndex = (ex.correct === 'belebt') ? 0 : 1;
+            zones[targetIndex].appendChild(item);
+            item.className = 'drag-item is-correct';
+        } else {
+            const select = document.getElementById(`input-${id}`);
+            select.value = ex.correct;
+            select.className = 'is-correct';
+        }
+    };
+
+    // Initialisierung
+    exercises.forEach((ex, i) => createExercise(ex, i));
+
+</script>
+
+</body>
+</html>
