@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Grammatik: Verben mit dem Akkusativ (A1)</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --border-color: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .explanation {
+            background: #eef2f7;
+            padding: 25px;
+            border-left: 5px solid var(--accent-color);
+            margin-bottom: 40px;
+            border-radius: 4px;
+        }
+
+        .exercise-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .exercise-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: block;
+            font-size: 1.1em;
+        }
+
+        /* Radio Button Styling */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .option-label {
+            display: block;
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            border-color: var(--accent-color);
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        /* Feedback Colors */
+        .correct-choice {
+            border-color: var(--success-color) !important;
+            background-color: #e8f5e9 !important;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .incorrect-choice {
+            border-color: var(--error-color) !important;
+            background-color: #ffebee !important;
+            color: var(--error-color);
+        }
+
+        /* Dropdown Styling */
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1em;
+            outline: none;
+        }
+
+        select.correct-choice {
+            border-color: var(--success-color);
+        }
+
+        select.incorrect-choice {
+            border-color: var(--error-color);
+        }
+
+        .btn-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-solution { background-color: var(--accent-color); color: white; }
+        button:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Verben mit dem Akkusativ (Винительный падеж)</h2>
+
+    <div class="explanation">
+        <h3>Kurze Einführung</h3>
+        <p>Der Akkusativ wird für das direkte Objekt verwendet. Man fragt „Кого?“ (Wen?) bei Personen/Tieren und „Что?“ (Was?) bei Gegenständen.</p>
+        <p><strong>Wichtige Regeln für A1:</strong></p>
+        <ul>
+            <li>Weibliche Substantive auf <strong>-а</strong> ändern sich zu <strong>-у</strong> (мама &rarr; маму).</li>
+            <li>Männliche <strong>belebte</strong> Substantive (Menschen) erhalten meist ein <strong>-а</strong> (Антон &rarr; Антона).</li>
+            <li><strong>Unbelebte</strong> männliche und alle sächlichen Wörter <strong>bleiben gleich</strong> (борщ &rarr; борщ, кофе &rarr; кофе).</li>
+        </ul>
+    </div>
+
+    <div id="exercises-container"></div>
+
+    <div style="text-align:center; margin-top: 40px; color: #7f8c8d; font-size: 0.9em;">
+        © Sprachassistent Russisch
+    </div>
+</div>
+
+<script>
+    const exercises = [
+        { id: 1, type: 'mc', q: 'Я люблю ... (мама).', options: ['мама', 'маму', 'маме'], correct: 'маму' },
+        { id: 2, type: 'mc', q: 'Ты читаешь ... (книга).', options: ['книга', 'книгу', 'книги'], correct: 'книгу' },
+        { id: 3, type: 'mc', q: 'Он пьёт ... (чай).', options: ['чай', 'чая', 'чаю'], correct: 'чай' },
+        { id: 4, type: 'mc', q: 'Мы ждём ... (папа).', options: ['папа', 'папу', 'папе'], correct: 'папу' },
+        { id: 5, type: 'mc', q: 'Вы видите ... (дом).', options: ['дом', 'дома', 'дому'], correct: 'дом' },
+        { id: 6, type: 'dd', q: 'Я встретил ... (друг).', options: ['друг', 'друга', 'другу'], correct: 'друга' },
+        { id: 7, type: 'dd', q: 'Она купила ... (яблоко).', options: ['яблоко', 'яблока', 'яблоку'], correct: 'яблоко' },
+        { id: 8, type: 'dd', q: 'Студент изучает ... (язык).', options: ['язык', 'языка', 'языку'], correct: 'язык' },
+        { id: 9, type: 'dd', q: 'Мы зовём ... (сестра).', options: ['сестра', 'сестру', 'сестре'], correct: 'сестру' },
+        { id: 10, type: 'dd', q: 'Ты помнишь ... (номер)?', options: ['номер', 'номера', 'номеру'], correct: 'номер' },
+        { id: 11, type: 'mc', q: 'Я готовлю ... (суп).', options: ['суп', 'супа', 'супу'], correct: 'суп' },
+        { id: 12, type: 'mc', q: 'Он забыл ... (ключ).', options: ['ключ', 'ключа', 'ключу'], correct: 'ключ' },
+        { id: 13, type: 'mc', q: 'Мы вспоминаем ... (история).', options: ['история', 'историю', 'истории'], correct: 'историю' },
+        { id: 14, type: 'mc', q: 'Я рисую ... (картина).', options: ['картина', 'картину', 'картине'], correct: 'картину' },
+        { id: 15, type: 'mc', q: 'Ты слышишь ... (музыка)?', options: ['музыка', 'музыку', 'музыке'], correct: 'музыку' },
+        { id: 16, type: 'dd', q: 'Welche Frage passt zu „вижу кота“?', options: ['Кого?', 'Что?'], correct: 'Кого?' },
+        { id: 17, type: 'dd', q: 'Welche Frage passt zu „ем салат“?', options: ['Кого?', 'Что?'], correct: 'Что?' },
+        { id: 18, type: 'dd', q: 'Welches Verb verlangt den Akkusativ?', options: ['жить', 'любить', 'гулять'], correct: 'любить' },
+        { id: 19, type: 'dd', q: 'Я хочу задать ... (вопрос).', options: ['вопрос', 'вопроса', 'вопросу'], correct: 'вопрос' },
+        { id: 20, type: 'dd', q: 'Welcher Satz ist korrekt?', options: ['Я знаю Антон.', 'Я знаю Антона.', 'Я знаю Антону.'], correct: 'Я знаю Антона.' }
+    ];
+
+    function init() {
+        const container = document.getElementById('exercises-container');
+        exercises.forEach((ex, idx) => {
+            const card = document.createElement('div');
+            card.className = 'exercise-card';
+            card.id = `card-${ex.id}`;
+
+            let inputHtml = '';
+            if (ex.type === 'mc') {
+                inputHtml = `<div class="options-grid">`;
+                ex.options.forEach(opt => {
+                    inputHtml += `
+                        <label class="option-label" id="label-${ex.id}-${opt}">
+                            <input type="radio" name="radio-${ex.id}" value="${opt}" onchange="checkMC(${ex.id}, '${opt}')">
+                            ${opt}
+                        </label>`;
+                });
+                inputHtml += `</div>`;
+            } else {
+                inputHtml = `
+                    <select id="select-${ex.id}" onchange="checkDD(${ex.id})">
+                        <option value="" disabled selected>Wähle die Antwort...</option>
+                        ${ex.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>`;
+            }
+
+            card.innerHTML = `
+                <span class="exercise-title">${idx + 1}. ${ex.q}</span>
+                ${inputHtml}
+                <div class="btn-group">
+                    <button class="btn-reset" onclick="resetEx(${ex.id})">Zurücksetzen</button>
+                    <button class="btn-solution" onclick="showSol(${ex.id})">Lösung anzeigen</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // Direct Feedback Multiple Choice
+    window.checkMC = function(id, selectedValue) {
+        const ex = exercises.find(e => e.id === id);
+        const labels = document.querySelectorAll(`#card-${id} .option-label`);
+        
+        labels.forEach(label => {
+            label.className = 'option-label'; // Reset
+            const radio = label.querySelector('input');
+            if (radio.value === selectedValue) {
+                label.classList.add(selectedValue === ex.correct ? 'correct-choice' : 'incorrect-choice');
+            }
+        });
+    };
+
+    // Direct Feedback Dropdown
+    window.checkDD = function(id) {
+        const ex = exercises.find(e => e.id === id);
+        const select = document.getElementById(`select-${id}`);
+        select.className = (select.value === ex.correct) ? 'correct-choice' : 'incorrect-choice';
+    };
+
+    // Reset Exercise
+    window.resetEx = function(id) {
+        const ex = exercises.find(e => e.id === id);
+        if (ex.type === 'mc') {
+            const labels = document.querySelectorAll(`#card-${id} .option-label`);
+            labels.forEach(l => {
+                l.className = 'option-label';
+                l.querySelector('input').checked = false;
+            });
+        } else {
+            const select = document.getElementById(`select-${id}`);
+            select.value = "";
+            select.className = "";
+        }
+    };
+
+    // Show Solution directly in input
+    window.showSol = function(id) {
+        const ex = exercises.find(e => e.id === id);
+        if (ex.type === 'mc') {
+            const labels = document.querySelectorAll(`#card-${id} .option-label`);
+            labels.forEach(l => {
+                const radio = l.querySelector('input');
+                l.className = 'option-label';
+                if (radio.value === ex.correct) {
+                    radio.checked = true;
+                    l.classList.add('correct-choice');
+                }
+            });
+        } else {
+            const select = document.getElementById(`select-${id}`);
+            select.value = ex.correct;
+            select.className = 'correct-choice';
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
