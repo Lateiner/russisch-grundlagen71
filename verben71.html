@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Verben-Klassifizierung (Akkusativ)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary); }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .verb-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .verb-card {
+            background: #fff;
+            border: 2px solid var(--border);
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .verb-text {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .verb-translation {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .choice-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        /* Feedback Farben */
+        .choice-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white;
+        }
+
+        .choice-btn.incorrect {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 6px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-sol { background-color: var(--accent); }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .verb-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Verben-Klassifizierung (Niveau A1)</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Verlangt dieses Verb ein direktes Objekt im <strong>Akkusativ</strong> (Wen? oder Was?)? 
+        Klicke auf „Ja“ oder „Nein“. Du erhältst sofort eine Rückmeldung.
+    </div>
+
+    <div id="verb-container" class="verb-grid">
+        <!-- Verben werden hier eingefügt -->
+    </div>
+
+    <div style="text-align:center; margin-top: 40px; color: #7f8c8d; font-size: 0.9em;">
+        © Sprachassistent Russisch - Fokus: Akkusativ-Objekte
+    </div>
+</div>
+
+<script>
+    const verbs = [
+        { id: 1, verb: "любить", trans: "lieben/mögen", acc: true },
+        { id: 2, verb: "жить", trans: "leben", acc: false },
+        { id: 3, verb: "читать", trans: "lesen", acc: true },
+        { id: 4, verb: "работать", trans: "arbeiten", acc: false },
+        { id: 5, verb: "знать", trans: "wissen/kennen", acc: true },
+        { id: 6, verb: "гулять", trans: "spazieren gehen", acc: false },
+        { id: 7, verb: "видеть", trans: "sehen", acc: true },
+        { id: 8, verb: "отдыхать", trans: "sich ausruhen", acc: false },
+        { id: 9, verb: "делать", trans: "machen", acc: true },
+        { id: 10, verb: "идти", trans: "gehen", acc: false },
+        { id: 11, verb: "покупать", trans: "kaufen", acc: true },
+        { id: 12, verb: "завтракать", trans: "frühstücken", acc: false },
+        { id: 13, verb: "слушать", trans: "hören/zuhören", acc: true },
+        { id: 14, verb: "стоять", trans: "stehen", acc: false },
+        { id: 15, verb: "пить", trans: "trinken", acc: true },
+        { id: 16, verb: "обедать", trans: "zu Mittag essen", acc: false },
+        { id: 17, verb: "ждать", trans: "warten", acc: true },
+        { id: 18, verb: "сидеть", trans: "sitzen", acc: false },
+        { id: 19, verb: "готовить", trans: "kochen/vorbereiten", acc: true },
+        { id: 20, verb: "спать", trans: "schlafen", acc: false }
+    ];
+
+    function renderVerbs() {
+        const container = document.getElementById('verb-container');
+        verbs.forEach((item) => {
+            const card = document.createElement('div');
+            card.className = 'verb-card';
+            card.id = `card-${item.id}`;
+
+            card.innerHTML = `
+                <div class="verb-text">${item.verb}</div>
+                <div class="verb-translation">(${item.trans})</div>
+                <div class="choice-buttons">
+                    <button class="choice-btn" id="btn-ja-${item.id}" onclick="checkAnswer(${item.id}, true)">Ja</button>
+                    <button class="choice-btn" id="btn-nein-${item.id}" onclick="checkAnswer(${item.id}, false)">Nein</button>
+                </div>
+                <div class="controls">
+                    <button class="control-btn btn-reset" onclick="resetCard(${item.id})">Reset</button>
+                    <button class="control-btn btn-sol" onclick="showSol(${item.id})">Lösung</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    window.checkAnswer = function(id, userChoice) {
+        const item = verbs.find(v => v.id === id);
+        const btnJa = document.getElementById(`btn-ja-${id}`);
+        const btnNein = document.getElementById(`btn-nein-${id}`);
+
+        // Reset Styles
+        btnJa.className = 'choice-btn';
+        btnNein.className = 'choice-btn';
+
+        if (userChoice === true) {
+            btnJa.classList.add(item.acc === true ? 'correct' : 'incorrect');
+        } else {
+            btnNein.classList.add(item.acc === false ? 'correct' : 'incorrect');
+        }
+    };
+
+    window.resetCard = function(id) {
+        document.getElementById(`btn-ja-${id}`).className = 'choice-btn';
+        document.getElementById(`btn-nein-${id}`).className = 'choice-btn';
+    };
+
+    window.showSol = function(id) {
+        const item = verbs.find(v => v.id === id);
+        const btnJa = document.getElementById(`btn-ja-${id}`);
+        const btnNein = document.getElementById(`btn-nein-${id}`);
+
+        btnJa.className = 'choice-btn';
+        btnNein.className = 'choice-btn';
+
+        if (item.acc === true) {
+            btnJa.classList.add('correct');
+        } else {
+            btnNein.classList.add('correct');
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', renderVerbs);
+</script>
+
+</body>
+</html>
