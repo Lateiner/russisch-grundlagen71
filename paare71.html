@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Logische Wortpaare (Akkusativ)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #fdfdfd;
+            --card-bg: #ffffff;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { text-align: center; color: var(--primary); margin-bottom: 10px; }
+
+        .instruction {
+            background: #eef2f7;
+            padding: 20px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .exercise-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .match-row {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 12px 20px;
+            border-radius: 10px;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .verb-label {
+            flex: 1;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent);
+            min-width: 120px;
+        }
+
+        .connector {
+            color: #bdc3c7;
+            font-weight: bold;
+        }
+
+        .object-select {
+            flex: 2;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: white;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        /* Feedback Farben */
+        .object-select.is-correct {
+            border-color: var(--success);
+            background-color: #e8f5e9;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .object-select.is-incorrect {
+            border-color: var(--error);
+            background-color: #ffebee;
+            color: var(--error);
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-sol { background-color: var(--accent); }
+        button:hover { opacity: 0.8; }
+
+        @media (max-width: 600px) {
+            .match-row { flex-direction: column; align-items: stretch; gap: 8px; }
+            .verb-label { min-width: auto; text-align: center; }
+            .connector { display: none; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Logische Wortpaare (Akkusativ)</h2>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Welches Objekt passt logisch zu welchem Verb? Wähle das richtige Wort im Akkusativ aus dem Menü. 
+        Die Antwortmöglichkeiten sind bei jeder Aufgabe gemischt.
+    </div>
+
+    <div id="exercise-list" class="exercise-grid">
+        <!-- Aufgaben werden per JS geladen -->
+    </div>
+
+    <div style="text-align:center; margin-top: 40px; color: #7f8c8d; font-size: 0.85rem;">
+        © Sprachassistent Russisch - A1 Training
+    </div>
+</div>
+
+<script>
+    // 20 Logische Paare (Verb + korrektes Akkusativ-Objekt)
+    const pairs = [
+        { id: 1, verb: "пить", correct: "сок", options: ["сок", "хлеб", "книгу"], trans: "trinken + Saft" },
+        { id: 2, verb: "слушать", correct: "музыку", options: ["музыку", "суп", "брата"], trans: "hören + Musik" },
+        { id: 3, verb: "смотреть", correct: "фильм", options: ["фильm", "воду", "обед"], trans: "schauen + Film" },
+        { id: 4, verb: "читать", correct: "газету", options: ["газету", "кофе", "номер"], trans: "lesen + Zeitung" },
+        { id: 5, verb: "есть", correct: "пиццу", options: ["пиццу", "радио", "песню"], trans: "essen + Pizza" },
+        { id: 6, verb: "любить", correct: "маму", options: ["маму", "шкаф", "метро"], trans: "lieben + Mama" },
+        { id: 7, verb: "готовить", correct: "ужин", options: ["ужин", "сестру", "язык"], trans: "kochen + Abendessen" },
+        { id: 8, verb: "покупать", correct: "яблоко", options: ["яблоко", "воздух", "время"], trans: "kaufen + Apfel" },
+        { id: 9, verb: "ждать", correct: "автобус", options: ["автобус", "суп", "завтрак"], trans: "warten + Bus" },
+        { id: 10, verb: "знать", correct: "ответ", options: ["ответ", "воду", "картину"], trans: "wissen + Antwort" },
+        { id: 11, verb: "писать", correct: "письмо", options: ["письмо", "чай", "подругу"], trans: "schreiben + Brief" },
+        { id: 12, verb: "учить", correct: "слова", options: ["слова", "кофе", "дверь"], trans: "lernen + Wörter" },
+        { id: 13, verb: "видеть", correct: "друга", options: ["друга", "сок", "письмо"], trans: "sehen + Freund" },
+        { id: 14, verb: "встретить", correct: "подругу", options: ["подругу", "яблоко", "вопрос"], trans: "treffen + Freundin" },
+        { id: 15, verb: "вспоминать", correct: "лето", options: ["лето", "суп", "книгу"], trans: "sich erinnern + Sommer" },
+        { id: 16, verb: "забыть", correct: "ключ", options: ["ключ", "сестру", "музыку"], trans: "vergessen + Schlüssel" },
+        { id: 17, verb: "открыть", correct: "дверь", options: ["дверь", "брата", "фильм"], trans: "öffnen + Tür" },
+        { id: 18, verb: "закрыть", correct: "окно", options: ["окно", "маму", "чай"], trans: "schließen + Fenster" },
+        { id: 19, verb: "задать", correct: "вопрос", options: ["вопрос", "хлеб", "картину"], trans: "stellen + Frage" },
+        { id: 20, verb: "рисовать", correct: "картину", options: ["картину", "сок", "автобус"], trans: "zeichnen + Bild" }
+    ];
+
+    // Korrektur kleiner Tippfehler in den Daten
+    pairs[2].options[0] = "фильм";
+
+    function shuffleArray(array) {
+        let shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    function renderExercises() {
+        const container = document.getElementById('exercise-list');
+        pairs.forEach((item) => {
+            const row = document.createElement('div');
+            row.className = 'match-row';
+            row.id = `row-${item.id}`;
+
+            const shuffledOptions = shuffleArray(item.options);
+
+            row.innerHTML = `
+                <div class="verb-label">${item.verb}</div>
+                <div class="connector">+</div>
+                <select class="object-select" id="select-${item.id}" onchange="checkAnswer(${item.id})">
+                    <option value="" disabled selected>Was passt?</option>
+                    ${shuffledOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                </select>
+                <div class="controls">
+                    <button class="btn-reset" onclick="resetAnswer(${item.id})">Reset</button>
+                    <button class="btn-sol" onclick="showSolution(${item.id})">Lösung</button>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    window.checkAnswer = function(id) {
+        const item = pairs.find(p => p.id === id);
+        const select = document.getElementById(`select-${id}`);
+        
+        if (select.value === item.correct) {
+            select.className = 'object-select is-correct';
+        } else {
+            select.className = 'object-select is-incorrect';
+        }
+    };
+
+    window.resetAnswer = function(id) {
+        const select = document.getElementById(`select-${id}`);
+        select.value = "";
+        select.className = "object-select";
+    };
+
+    window.showSolution = function(id) {
+        const item = pairs.find(p => p.id === id);
+        const select = document.getElementById(`select-${id}`);
+        select.value = item.correct;
+        select.className = 'object-select is-correct';
+    };
+
+    document.addEventListener('DOMContentLoaded', renderExercises);
+</script>
+
+</body>
+</html>
